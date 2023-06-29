@@ -1,36 +1,138 @@
-phonebook = {}
+import getpass
 
 
-def adding(x, y):
-    return x + y
+def load_phonebook():
+    phonebook = {}
+    try:
+        with open("phonebook.txt", "r") as file:
+            lines = file.readlines()
+            for line in lines:
+                name, phone = line.strip().split(":")
+                phonebook[name] = phone
+    except FileNotFoundError:
+        pass
+    return phonebook
 
 
-def multiplying(x, y):
-    return x * y
+def save_phonebook(phonebook):
+    with open("phonebook.txt", "w") as file:
+        for name, phone in phonebook.items():
+            file.write(f"{name}:{phone}\n")
 
 
-def substraction(x, y):
-    return x - y
+phonebook = load_phonebook()
+
+
+def input_error(func):
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except KeyError:
+            return "Enter user name"
+        except ValueError:
+            return "Give me name and phone please"
+        except IndexError:
+            return "Invalid command"
+        except TypeError:
+            return "Please provide the necessary parameters"
+
+    return wrapper
+
+
+@input_error
+def hello(name=None):
+    if name is None:
+        name = getpass.getuser()
+    return f"How can I help you, {name}?"
+
+
+@input_error
+def add_contact(name=None, phone=None):
+    if name is None or phone is None:
+        return "Please provide a name and phone number"
+
+    phonebook[name] = phone
+    return f"Contact {name} with phone {phone} added"
+
+
+@input_error
+def del_contact(name=None):
+    if name is None:
+        return "Please provide a name"
+
+    if (
+        name in phonebook
+        and "yes" == input(f"Are you sure delete {name}: Yes/No :").lower()
+    ):
+        del phonebook[name]
+        return f"Contact {name} deleted"
+    else:
+        return f"Contact {name} does not exist in the phonebook"
+
+
+@input_error
+def change_phone(name=None, phone=None):
+    if name is None or phone is None:
+        return "Please provide a name and phone number"
+
+    if name in phonebook:
+        phonebook[name] = phone
+        return f"Phone number for contact {name} changed to {phone}"
+    else:
+        return f"Contact {name} does not exist in the phonebook"
+
+
+@input_error
+def get_phone(name=None):
+    if name is None:
+        return "Please provide a name"
+
+    return phonebook[name]
+
+
+@input_error
+def show_all(phonebook):
+    if not phonebook:
+        return "Phonebook is empty"
+
+    contacts = "\n".join(f"{name}: {phone}" for name, phone in phonebook.items())
+    return contacts
 
 
 OPERATIONS = {
-    adding: ("+", "плюс", "додай", "add"),
-    multiplying: ("*",),
-    substraction: ("-",),
+    hello: ("hello"),
+    add_contact: ("+", "плюс", "додай", "add"),
+    del_contact: ("del", "delete", "remove", "видалити"),
+    change_phone: ("change", "змінити"),
+    get_phone: ("phone", "номер"),
+    show_all: ("show all", "все"),
 }
 
 
-def main():
-    x = 10
-    y = 5
-    while True:
-        user_input = input("Waiting... ")
+def handler(user_input):
+    for func, operations in OPERATIONS.items():
+        for operation in operations:
+            if user_input.startswith(operation):
+                if operation == "hello":
+                    return func()
+                elif operation in ("show all", "все"):
+                    return func(phonebook)
+                else:
+                    params = user_input[len(operation) + 1 :].split(" ", 1)
+                    return func(*params)
+    return "Invalid command"
 
-        if not user_input:
+
+def main():
+    while True:
+        user_input = input("Waiting... ").lower()
+
+        if user_input in ["good bye", "close", "exit"]:
+            print("Good bye!")
+            save_phonebook(phonebook)
             break
-        for func, opertions in OPERATIONS.items():
-            if user_input in opertions:
-                print(func(x, y))
+        result = handler(user_input)
+        print(result)
 
 
 if __name__ == "__main__":
