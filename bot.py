@@ -1,26 +1,38 @@
-import getpass
+import os
+import re
+from collections import UserDict
+
+# import clases_bot
+from clases_bot import AddressBook, Record, Name, Phone
+
+new_phonebook = AddressBook()
 
 
-def load_phonebook():
-    phonebook = {}
+def load_phonebook(phonebook):
     try:
         with open("phonebook.txt", "r") as file:
             lines = file.readlines()
             for line in lines:
-                name, phone = line.strip().split(":")
-                phonebook[name] = phone
+                n, p = line.strip().split(":")
+                name = Name(n)
+                phone = Phone(p.split(","))
+
+                contact = Record(name, phone)
+                phonebook.add_record(contact)
     except FileNotFoundError:
         pass
     return phonebook
 
 
 def save_phonebook(phonebook):
+    patern = rf"[\[\]]"
     with open("phonebook.txt", "w") as file:
-        for name, phone in phonebook.items():
-            file.write(f"{name}:{phone}\n")
+        for name, value in phonebook.data.items():
+            i = re.sub(patern, "", str(value))
+            file.write(f"{name}:{i}\n")
 
 
-phonebook = load_phonebook()
+phonebook = load_phonebook(new_phonebook)
 
 
 def input_error(func):
@@ -42,7 +54,7 @@ def input_error(func):
 @input_error
 def hello(name=None):
     if name is None:
-        name = getpass.getuser()
+        name = os.environ.get("USERNAME")
     return f"How can I help you, {name}?"
 
 
@@ -100,12 +112,31 @@ def show_all(phonebook):
 
 
 OPERATIONS = {
-    hello: ("hello"),
-    add_contact: ("+", "плюс", "додай", "add"),
-    del_contact: ("del", "delete", "remove", "видалити"),
-    change_phone: ("change", "змінити"),
-    get_phone: ("phone", "номер"),
-    show_all: ("show all", "все"),
+    hello: ("hello",),
+    add_contact: (
+        "+",
+        "плюс",
+        "додай",
+        "add",
+    ),
+    del_contact: (
+        "del",
+        "delete",
+        "remove",
+        "видалити",
+    ),
+    change_phone: (
+        "change",
+        "змінити",
+    ),
+    get_phone: (
+        "phone",
+        "номер",
+    ),
+    show_all: (
+        "show all",
+        "все",
+    ),
 }
 
 
