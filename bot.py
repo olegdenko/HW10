@@ -1,8 +1,5 @@
 import os
-import re
 from collections import UserDict
-
-# import clases_bot
 from clases_bot import AddressBook, Record, Name, Phone
 
 new_phonebook = AddressBook()
@@ -25,11 +22,13 @@ def load_phonebook(phonebook):
 
 
 def save_phonebook(phonebook):
-    patern = rf"[\[\]]"
     with open("phonebook.txt", "w") as file:
         for name, value in phonebook.data.items():
-            i = re.sub(patern, "", str(value))
-            file.write(f"{name}:{i}\n")
+            if isinstance(value, Record):
+                phones = ", ".join(value.phones)
+                file.write(f"{name}:{phones}\n")
+            else:
+                file.write(f"{name}:{value}\n")
 
 
 phonebook = load_phonebook(new_phonebook)
