@@ -12,9 +12,9 @@ def load_phonebook(phonebook):
             for line in lines:
                 n, p = line.strip().split(":")
                 name = Name(n)
-                phone = Phone(p.split(","))
+                phones = [Phone(phone.strip()) for phone in p.split(",")]
 
-                contact = Record(name, phone)
+                contact = Record(name, phones)
                 phonebook.add_record(contact)
     except FileNotFoundError:
         pass
@@ -23,12 +23,16 @@ def load_phonebook(phonebook):
 
 def save_phonebook(phonebook):
     with open("phonebook.txt", "w") as file:
-        for name, value in phonebook.data.items():
-            if isinstance(value, Record):
-                phones = ", ".join(value.phones)
-                file.write(f"{name}:{phones}\n")
+        for name, record in phonebook.data.items():
+            if isinstance(record, Record):
+                phones = [
+                    phone.value if isinstance(phone, Phone) else phone
+                    for phone in record.phones
+                ]
+                phones_str = ", ".join(phones)
+                file.write(f"{name}:{phones_str}\n")
             else:
-                file.write(f"{name}:{value}\n")
+                file.write(f"{name}:{record}\n")
 
 
 phonebook = load_phonebook(new_phonebook)
@@ -62,7 +66,8 @@ def add_contact(name=None, phone=None):
     if name is None or phone is None:
         return "Please provide a name and phone number"
 
-    phonebook[name] = phone
+    phones = [Phone(p.strip()) for p in phone.split(",")]
+    phonebook.add_record(Record(Name(name), phones))
     return f"Contact {name} with phone {phone} added"
 
 
@@ -87,7 +92,9 @@ def change_phone(name=None, phone=None):
         return "Please provide a name and phone number"
 
     if name in phonebook:
-        phonebook[name] = phone
+        phones = [Phone(p) for p in phone.split(",")]
+        record = Record(Name(name), phones)
+        phonebook.add_record(record)
         return f"Phone number for contact {name} changed to {phone}"
     else:
         return f"Contact {name} does not exist in the phonebook"
@@ -106,7 +113,11 @@ def show_all(phonebook):
     if not phonebook:
         return "Phonebook is empty"
 
-    contacts = "\n".join(f"{name}: {phone}" for name, phone in phonebook.items())
+    contacts = "\n".join(
+        f"{name}: {', '.join([phone.value if isinstance(phone, Phone) else Phone(phone).value for phone in record.phones])}"
+        for name, record in phonebook.items()
+        if isinstance(record, Record)
+    )
     return contacts
 
 
@@ -130,6 +141,7 @@ OPERATIONS = {
     ),
     get_phone: (
         "phone",
+        "get",
         "номер",
     ),
     show_all: (

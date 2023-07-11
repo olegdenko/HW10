@@ -2,7 +2,7 @@ from collections import UserDict
 
 
 class Field:
-    def __init__(self, value=None) -> None:
+    def __init__(self, value):
         self.value = value
 
 
@@ -15,14 +15,14 @@ class Phone(Field):
 
 
 class Record:
-    def __init__(self, name: Name, phones: Phone = None) -> None:
+    def __init__(self, name: Name, phones: list[Phone]):
         self.name = name
         self.phones = []
-        if type(phones.value) == list:
-            self.phones.extend(phones.value)
-
-        elif phones:
-            self.phones.append(phones)
+        for phone in phones:
+            if isinstance(phone, Phone):
+                self.phones.append(phone.value)
+            else:
+                self.phones.append(phone)
 
     def get_name(self):
         return self.name
