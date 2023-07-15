@@ -1,5 +1,4 @@
 import os
-from collections import UserDict
 from clases_bot import AddressBook, Record, Name, Phone
 
 new_phonebook = AddressBook()
@@ -62,13 +61,14 @@ def hello(name=None):
 
 
 @input_error
-def add_contact(name=None, phone=None):
-    if name is None or phone is None:
-        return "Please provide a name and phone number"
-
-    phones = [Phone(p.strip()) for p in phone.split(",")]
-    phonebook.add_record(Record(Name(name), phones))
-    return f"Contact {name} with phone {phone} added"
+def add_contact(name, phone=None):
+    if phone:
+        phones = [Phone(p.strip()) for p in phone.split(",")]
+        phonebook.add_record(Record(Name(name), phones))
+        return f"Contact {name} with phone {phone} added"
+    else:
+        phonebook.add_record(Record(Name(name)))
+        return f"Contact {name} added"
 
 
 @input_error

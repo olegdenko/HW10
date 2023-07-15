@@ -15,14 +15,17 @@ class Phone(Field):
 
 
 class Record:
-    def __init__(self, name: Name, phones: list[Phone]):
+    def __init__(self, name: Name, phones: list[Phone] = None):
         self.name = name
         self.phones = []
-        for phone in phones:
-            if isinstance(phone, Phone):
-                self.phones.append(phone.value)
-            else:
-                self.phones.append(phone)
+        if phones:
+            self.phones.extend(phones)
+
+        # for phone in phones: # self.phones.extend(phones)
+        #     if isinstance(phone, Phone):
+        #         self.phones.append(phone.value)
+        #     else:
+        #         self.phones.append(phone)
 
     def get_name(self):
         return self.name
