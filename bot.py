@@ -111,7 +111,7 @@ def get_phone(name=None):
 @input_error
 def show_all(phonebook):
     if not phonebook:
-        return "Phonebook is empty"
+        return "Addressbook is empty"
 
     contacts = "\n".join(
         f"{name}: {', '.join([phone.value if isinstance(phone, Phone) else Phone(phone).value for phone in record.phones])}"
